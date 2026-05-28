@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>BP Log</title>
+
+<!-- iOS PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BP Log">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#faf7f2">
+<meta name="format-detection" content="telephone=no">
+
+<!-- Inline SVG icon for home screen -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23faf7f2'/><text x='50%25' y='62%25' text-anchor='middle' font-family='Georgia,serif' font-size='66' font-weight='500' fill='%231a1a1a' letter-spacing='-2'>BP</text><circle cx='130' cy='52' r='6' fill='%23b91c1c'/></svg>">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23faf7f2'/><text x='50%25' y='62%25' text-anchor='middle' font-family='Georgia,serif' font-size='66' font-weight='500' fill='%231a1a1a'>BP</text><circle cx='130' cy='52' r='6' fill='%23b91c1c'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0;
+  background: #faf7f2;
+  color: #1a1a1a;
+  font-family: "IBM Plex Sans", -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: contain;
+}
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+input, button, select, textarea { font-family: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: none; padding: 0; }
+input:focus, textarea:focus { outline: 2px solid #1a1a1a; outline-offset: 1px; }
+
+.shell {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 20px 18px 110px;
+  position: relative;
+}
+
+/* HEADER */
+.header { margin-bottom: 22px; }
+.eyebrow {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: #8a7e6d;
+}
+.title {
+  font-family: "Fraunces", serif; font-weight: 500;
+  font-size: 34px; line-height: 1.05; letter-spacing: -0.02em;
+  margin-top: 2px;
+}
+.tabs {
+  display: flex; gap: 6px; margin-top: 16px;
+  padding: 4px; border: 1px solid #dcd4c6; border-radius: 999px;
+  background: #f3ede2; width: fit-content;
+}
+.tab {
+  padding: 7px 14px; font-size: 12px; font-weight: 500;
+  border-radius: 999px; transition: all 0.15s ease;
+  color: #1a1a1a;
+}
+.tab.active { background: #1a1a1a; color: #faf7f2; }
+
+/* SECTION HEADER */
+.section-header {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: #8a7e6d;
+  margin: 28px 0 10px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+/* HERO */
+.hero {
+  border: 1px solid;
+  border-radius: 16px;
+  padding: 18px 18px 16px;
+}
+.hero-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px;
+}
+.hero-period {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #3a3a3a;
+}
+.hero-time {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px;
+}
+.hero-dot { opacity: 0.4; }
+.hero-pill {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+  padding: 4px 8px; border: 1px solid; border-radius: 4px;
+  background: rgba(255,255,255,0.6);
+}
+.hero-numbers {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-top: 14px;
+}
+.bp-big {
+  font-family: "Fraunces", serif; font-weight: 400;
+  font-size: 64px; line-height: 1; letter-spacing: -0.04em;
+}
+.bp-slash { opacity: 0.4; margin: 0 4px; font-weight: 300; }
+.hero-unit {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px;
+  color: #6b6258; letter-spacing: 0.05em;
+}
+.hero-meta {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+.meta-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: #8a7e6d; margin-bottom: 4px;
+}
+.meta-row { display: flex; align-items: baseline; gap: 4px; }
+.meta-value {
+  font-family: "Fraunces", serif; font-weight: 500;
+  font-size: 22px; line-height: 1; letter-spacing: -0.02em;
+}
+.meta-unit {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; color: #8a7e6d; letter-spacing: 0.05em;
+}
+.meta-note {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; margin-top: 2px; letter-spacing: 0.05em;
+}
+.hero-notes {
+  display: flex; gap: 6px; align-items: flex-start;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  font-size: 12px; font-style: italic; color: #3a3a3a;
+}
+
+/* PERIOD TILES */
+.period-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.period-tile {
+  background: #fff;
+  border: 1px solid #ece4d3;
+  border-radius: 12px;
+  padding: 12px 12px 14px;
+}
+.period-tile-head {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 600;
+  margin-bottom: 8px;
+}
+.period-big {
+  font-family: "Fraunces", serif; font-weight: 500;
+  font-size: 22px; line-height: 1; letter-spacing: -0.02em;
+}
+.period-slash { opacity: 0.35; margin: 0 1px; }
+.period-sub {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; color: #8a7e6d;
+  margin-top: 6px; letter-spacing: 0.04em;
+}
+.period-empty {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; color: #bdb3a3; margin-top: 6px;
+}
+
+/* STATS */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+}
+.stat-cell {
+  background: #fff;
+  border: 1px solid #ece4d3;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.stat-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: #8a7e6d; margin-bottom: 6px;
+}
+.stat-value-row { display: flex; align-items: baseline; gap: 4px; }
+.stat-value {
+  font-family: "Fraunces", serif; font-weight: 500;
+  font-size: 26px; line-height: 1; letter-spacing: -0.02em;
+}
+.stat-unit {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; color: #8a7e6d; letter-spacing: 0.05em;
+}
+
+/* ROW (reading list item) */
+.recent-list { display: flex; flex-direction: column; gap: 6px; }
+.row {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff;
+  border: 1px solid #ece4d3;
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: background 0.1s ease;
+}
+.row.tappable { cursor: pointer; }
+.row.tappable:active { background: #f3ede2; }
+.row-dot { width: 4px; align-self: stretch; border-radius: 2px; }
+.row-main { flex: 1; min-width: 0; }
+.row-top {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: #3a3a3a;
+}
+.row-period { font-weight: 600; }
+.row-date {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; color: #8a7e6d;
+}
+.row-notes {
+  font-size: 11px; color: #6b6258;
+  margin-top: 4px; font-style: italic;
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.row-reading { text-align: right; }
+.row-bp {
+  display: block;
+  font-family: "Fraunces", serif; font-weight: 500;
+  font-size: 18px; letter-spacing: -0.01em;
+}
+.row-hr {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; color: #8a7e6d;
+}
+.row-chevron { color: #bdb3a3; }
+
+/* CHART CONTROLS */
+.controls-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-bottom: 12px;
+}
+.control-group {
+  display: flex; gap: 4px;
+  padding: 3px; border: 1px solid #dcd4c6; border-radius: 999px;
+  background: #f3ede2;
+}
+.chip {
+  padding: 5px 11px; font-size: 11px; font-weight: 500;
+  border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #1a1a1a;
+}
+.chip.active { background: #1a1a1a; color: #faf7f2; }
+
+/* CHART CARD */
+.chart-card {
+  background: #fff;
+  border: 1px solid #ece4d3;
+  border-radius: 12px;
+  padding: 14px 12px 12px;
+}
+.chart-legend {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 8px; padding-left: 4px;
+}
+.legend-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #faf7f2; border: 1px solid #dcd4c6;
+  border-radius: 999px; padding: 4px 10px;
+  font-size: 11px; font-weight: 500;
+}
+.legend-toggle.off { opacity: 0.35; }
+.legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+.chart-footnote {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; color: #8a7e6d;
+  letter-spacing: 0.04em;
+  margin-top: 8px; padding-left: 4px;
+}
+.chart-svg { width: 100%; display: block; touch-action: pan-y; }
+.chart-axis-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; fill: #8a7e6d;
+}
+.chart-tooltip {
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+/* EXPORT BUTTONS */
+.export-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #1a1a1a; color: #faf7f2;
+  border-radius: 999px;
+  padding: 6px 12px; font-size: 11px; font-weight: 500;
+}
+.export-row {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.export-row .export-btn { background: #fff; color: #1a1a1a; border: 1px solid #dcd4c6; }
+.export-row .export-btn:active { background: #f3ede2; }
+
+/* APPLE HEALTH SYNC */
+.sync-card {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #ece4d3;
+  border-radius: 14px;
+  padding: 14px 14px;
+  margin-bottom: 8px;
+}
+.sync-card.synced { background: #f0fdf4; border-color: #bbf7d0; }
+.sync-card-main { display: flex; align-items: center; gap: 12px; }
+.sync-card-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fee2e2; color: #b91c1c; flex: 0 0 auto;
+}
+.sync-card.synced .sync-card-icon { background: #dcfce7; color: #15803d; }
+.sync-card-title {
+  font-family: "Fraunces", serif; font-weight: 500;
+  font-size: 16px; letter-spacing: -0.01em;
+}
+.sync-card-sub {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; color: #8a7e6d;
+  letter-spacing: 0.04em; margin-top: 2px;
+}
+.sync-btn {
+  flex: 0 0 auto;
+  background: #1a1a1a; color: #faf7f2;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 13px; font-weight: 500;
+}
+.sync-btn:active { transform: scale(0.97); }
+.sync-btn.ghost {
+  background: transparent; color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+.reset-sync-link {
+  display: block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; color: #8a7e6d;
+  letter-spacing: 0.04em;
+  margin: 0 0 14px 4px;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.row-synced {
+  display: inline-flex; vertical-align: middle;
+  color: #15803d; margin-left: 2px;
+}
+
+/* FAB */
+.fab {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  right: 24px;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: #1a1a1a; color: #faf7f2;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;
+  font-size: 28px; font-weight: 300; line-height: 1;
+}
+.fab:active { transform: scale(0.95); }
+
+/* MODAL */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(26,26,26,0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 100;
+}
+.modal {
+  background: #faf7f2;
+  width: 100%; max-width: 560px;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+  max-height: 92vh; overflow-y: auto;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.modal-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 18px;
+}
+.modal-title {
+  font-family: "Fraunces", serif; font-weight: 500;
+  font-size: 24px; line-height: 1.1; letter-spacing: -0.02em;
+  margin-top: 2px;
+}
+.icon-btn {
+  border: 1px solid #dcd4c6;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.field { margin-bottom: 14px; }
+.field-label {
+  display: block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: #8a7e6d; margin-bottom: 7px;
+}
+.seg-group {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  padding: 3px; border: 1px solid #dcd4c6; border-radius: 12px;
+  background: #f3ede2;
+}
+.seg-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 6px;
+  border-radius: 9px;
+  font-size: 12px; font-weight: 500;
+  color: #1a1a1a;
+}
+.seg-btn.active { background: #1a1a1a; color: #faf7f2; }
+
+.bp-row {
+  display: flex; align-items: flex-end; gap: 8px;
+  margin-bottom: 14px;
+}
+.bp-row .field { margin-bottom: 0; flex: 1; }
+.bp-slash-char {
+  font-family: "Fraunces", serif; font-weight: 300;
+  font-size: 40px; line-height: 1; color: #bdb3a3;
+  padding-bottom: 8px;
+}
+.big-input {
+  width: 100%; padding: 14px 14px;
+  font-size: 22px; font-weight: 500;
+  font-family: "Fraunces", serif; letter-spacing: -0.01em;
+  background: #fff; border: 1px solid #dcd4c6; border-radius: 12px;
+  -webkit-appearance: none; appearance: none;
+}
+.big-input::-webkit-outer-spin-button,
+.big-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.dt-input {
+  width: 100%; padding: 12px 14px;
+  font-size: 14px;
+  font-family: "IBM Plex Sans", sans-serif;
+  background: #fff; border: 1px solid #dcd4c6; border-radius: 12px;
+  -webkit-appearance: none; appearance: none;
+}
+.textarea {
+  width: 100%; padding: 12px 14px;
+  font-size: 14px; line-height: 1.5;
+  font-family: "IBM Plex Sans", sans-serif;
+  background: #fff; border: 1px solid #dcd4c6; border-radius: 12px;
+  resize: vertical;
+}
+.preview {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid; border-radius: 10px;
+  margin-bottom: 14px;
+}
+.preview-pill {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+  padding: 3px 7px; border: 1px solid; border-radius: 4px;
+  background: rgba(255,255,255,0.6);
+}
+.preview-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px; color: #3a3a3a;
+}
+.error {
+  background: #fef2f2; border: 1px solid #fecaca;
+  color: #b91c1c; border-radius: 10px;
+  padding: 10px 12px; font-size: 12px;
+  margin-bottom: 14px;
+}
+.modal-actions {
+  display: flex; gap: 8px; margin-top: 6px;
+}
+.primary-btn {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: #1a1a1a; color: #faf7f2;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 14px; font-weight: 500;
+}
+.secondary-btn {
+  background: transparent; color: #1a1a1a;
+  border: 1px solid #dcd4c6; border-radius: 12px;
+  padding: 14px 22px;
+  font-size: 14px; font-weight: 500;
+}
+.delete-btn {
+  background: transparent; color: #b91c1c;
+  border: 1px solid #fecaca; border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 14px; font-weight: 500;
+}
+
+/* EMPTY */
+.empty-hero {
+  background: #fff;
+  border: 1px solid #ece4d3;
+  border-radius: 16px;
+  padding: 32px 22px;
+  text-align: center;
+}
+.empty-title {
+  font-family: "Fraunces", serif; font-weight: 500;
+  font-size: 22px; letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.empty-body {
+  font-size: 13px; color: #6b6258; line-height: 1.5;
+}
+.empty-small {
+  background: #fff; border: 1px solid #ece4d3;
+  border-radius: 10px; padding: 14px 14px;
+  font-size: 12px; color: #8a7e6d;
+  text-align: center;
+}
+
+/* Small icon */
+.icon {
+  display: inline-flex;
+  vertical-align: -2px;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  left: 50%; transform: translateX(-50%);
+  background: #1a1a1a; color: #faf7f2;
+  padding: 10px 16px; border-radius: 999px;
+  font-size: 12px; font-weight: 500;
+  z-index: 200;
+  animation: toastIn 0.2s ease;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ============================================================
+// BP Tracker - standalone
+// ============================================================
+
+const STORAGE_KEY = 'bp-readings-v1';
+
+const PERIODS = {
+  morning:  { label: 'Morning',       short: 'AM', tint: '#c2410c', icon: 'sun' },
+  exercise: { label: 'Post-Exercise', short: 'EX', tint: '#0e7490', icon: 'dumbbell' },
+  night:    { label: 'Night',         short: 'PM', tint: '#4338ca', icon: 'moon' },
+};
+
+const ICONS = {
+  sun: '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
+  moon: '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  dumbbell: '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M4 9v6M20 9v6M2 11v2M22 11v2"/></svg>',
+  plus: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  download: '<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  share: '<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>',
+  copy: '<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  chevron: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  notes: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  health: '<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  check: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+};
+
+// ---------- Domain ----------
+
+function getCategory(sbp, dbp) {
+  if (sbp > 180 || dbp > 120) return { name: 'Hypertensive Crisis', short: 'CRISIS',   color: '#7f1d1d', bg: '#fee2e2', ring: '#fca5a5' };
+  if (sbp >= 140 || dbp >= 90) return { name: 'Stage 2 Hypertension', short: 'STAGE 2', color: '#b91c1c', bg: '#fef2f2', ring: '#fecaca' };
+  if (sbp >= 130 || dbp >= 80) return { name: 'Stage 1 Hypertension', short: 'STAGE 1', color: '#c2410c', bg: '#fff7ed', ring: '#fed7aa' };
+  if (sbp >= 120 && dbp < 80)  return { name: 'Elevated',              short: 'ELEVATED',color: '#a16207', bg: '#fefce8', ring: '#fde68a' };
+  return                              { name: 'Normal',                short: 'NORMAL',  color: '#15803d', bg: '#f0fdf4', ring: '#bbf7d0' };
+}
+function getHRStatus(hr) {
+  if (hr < 60)  return { label: 'Bradycardia', color: '#4338ca' };
+  if (hr > 100) return { label: 'Tachycardia', color: '#b91c1c' };
+  return { label: 'Normal', color: '#15803d' };
+}
+const calcMAP = (s, d) => Math.round(d + (s - d) / 3);
+const calcPP  = (s, d) => s - d;
+
+const fmtDate = (ts) => new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+const fmtTime = (ts) => new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+const fmtFull = (ts) => new Date(ts).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
+function toDateTimeLocal(ts) {
+  const d = new Date(ts);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromDateTimeLocal(s) {
+  // 'YYYY-MM-DDTHH:MM' interpreted as local
+  const d = new Date(s);
+  return d.getTime();
+}
+function inferPeriodFromTime(ts) {
+  const h = new Date(ts).getHours();
+  if (h >= 5 && h < 11) return 'morning';
+  if (h >= 18 || h < 5) return 'night';
+  return 'morning';
+}
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ---------- State ----------
+
+const state = {
+  readings: [],
+  view: 'home',        // home | chart | history | log
+  editingId: null,
+  range: 30,
+  filterPeriod: 'all',
+  showLines: { sbp: true, dbp: true, hr: true },
+  form: { period: 'morning', sbp: '', dbp: '', hr: '', notes: '', when: '' },
+  formError: '',
+  toast: '',
+};
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state.readings = JSON.parse(raw);
+  } catch (e) { console.error('load failed', e); }
+}
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.readings));
+  } catch (e) { console.error('save failed', e); }
+}
+
+function setState(updates) {
+  Object.assign(state, updates);
+  render();
+}
+
+function showToast(msg) {
+  state.toast = msg;
+  render();
+  setTimeout(() => { state.toast = ''; render(); }, 1800);
+}
+
+// ---------- Actions ----------
+
+function openLog() {
+  state.editingId = null;
+  state.formError = '';
+  state.form = {
+    period: inferPeriodFromTime(Date.now()),
+    sbp: '', dbp: '', hr: '', notes: '',
+    when: toDateTimeLocal(Date.now()),
+  };
+  setState({ view: 'log' });
+}
+
+function openEdit(id) {
+  const r = state.readings.find(x => x.id === id);
+  if (!r) return;
+  state.editingId = id;
+  state.formError = '';
+  state.form = {
+    period: r.period,
+    sbp: String(r.sbp), dbp: String(r.dbp), hr: String(r.hr),
+    notes: r.notes || '',
+    when: toDateTimeLocal(r.timestamp),
+  };
+  setState({ view: 'log' });
+}
+
+function closeLog() {
+  state.editingId = null;
+  state.formError = '';
+  setState({ view: state.view === 'log' ? 'home' : state.view });
+}
+
+function saveReading() {
+  const f = state.form;
+  const sbp = parseInt(f.sbp, 10);
+  const dbp = parseInt(f.dbp, 10);
+  const hr  = parseInt(f.hr, 10);
+
+  if (!sbp || !dbp || !hr) {
+    state.formError = 'Enter systolic, diastolic, and heart rate.';
+    render(); return;
+  }
+  if (sbp <= dbp) {
+    state.formError = 'Systolic must be greater than diastolic.';
+    render(); return;
+  }
+  if (sbp < 60 || sbp > 260 || dbp < 30 || dbp > 160 || hr < 30 || hr > 220) {
+    state.formError = 'One of those values is outside a physiologic range — double-check.';
+    render(); return;
+  }
+  const ts = f.when ? fromDateTimeLocal(f.when) : Date.now();
+  if (isNaN(ts)) {
+    state.formError = 'Invalid date/time.';
+    render(); return;
+  }
+
+  if (state.editingId) {
+    state.readings = state.readings.map(r =>
+      r.id === state.editingId
+        ? { ...r, period: f.period, sbp, dbp, hr, notes: f.notes.trim(), timestamp: ts, synced: false }
+        : r
+    ).sort((a, b) => a.timestamp - b.timestamp);
+    saveToStorage();
+    state.editingId = null;
+    state.form = { period: 'morning', sbp: '', dbp: '', hr: '', notes: '', when: '' };
+    setState({ view: 'history' });
+    showToast('Updated');
+  } else {
+    state.readings = [
+      ...state.readings,
+      { id: Date.now().toString(), timestamp: ts, period: f.period, sbp, dbp, hr, notes: f.notes.trim(), synced: false },
+    ].sort((a, b) => a.timestamp - b.timestamp);
+    saveToStorage();
+    state.form = { period: 'morning', sbp: '', dbp: '', hr: '', notes: '', when: '' };
+    setState({ view: 'home' });
+    showToast('Saved');
+  }
+}
+
+function deleteReading() {
+  if (!state.editingId) return;
+  if (!confirm('Delete this reading?')) return;
+  state.readings = state.readings.filter(r => r.id !== state.editingId);
+  saveToStorage();
+  state.editingId = null;
+  setState({ view: 'history' });
+  showToast('Deleted');
+}
+
+// ---------- Apple Health sync (via Shortcuts) ----------
+
+const HEALTH_SHORTCUT_NAME = 'Sync BP to Health';
+
+// US-locale date string with no internal field issues (we use | as the separator)
+function toHealthDate(ts) {
+  return new Date(ts).toLocaleString('en-US', {
+    year: 'numeric', month: 'numeric', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  });
+}
+
+function getUnsynced() {
+  return state.readings.filter(r => !r.synced);
+}
+
+// Build the payload the Shortcut will parse.
+// One reading per line:  M/D/YYYY, h:mm AM|SBP|DBP|HR
+function buildHealthPayload(list) {
+  return list.map(r => `${toHealthDate(r.timestamp)}|${r.sbp}|${r.dbp}|${r.hr}`).join('\n');
+}
+
+async function syncToHealth() {
+  const unsynced = getUnsynced();
+  if (!unsynced.length) {
+    if (confirm('Everything is already marked as synced. Re-send ALL readings to Apple Health anyway?')) {
+      await pushToHealth(state.readings, true);
+    }
+    return;
+  }
+  await pushToHealth(unsynced, false);
+}
+
+async function pushToHealth(list, isResync) {
+  const payload = buildHealthPayload(list);
+
+  // Put the data on the clipboard; the Shortcut reads it via "Get Clipboard".
+  try {
+    await navigator.clipboard.writeText(payload);
+  } catch (e) {
+    showToast('Allow clipboard access, then tap again');
+    return;
+  }
+
+  // Optimistically mark these as synced (the URL hand-off is fire-and-forget).
+  if (!isResync) {
+    const ids = new Set(list.map(r => r.id));
+    state.readings = state.readings.map(r => ids.has(r.id) ? { ...r, synced: true } : r);
+    saveToStorage();
+  }
+
+  showToast(`Sending ${list.length} reading${list.length > 1 ? 's' : ''} to Health…`);
+  render();
+
+  // Hand off to the Shortcut (data already on clipboard).
+  setTimeout(() => {
+    window.location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(HEALTH_SHORTCUT_NAME)}`;
+  }, 150);
+}
+
+function resetSyncStatus() {
+  if (!confirm('Mark all readings as NOT synced? Use this if a sync did not go through. Your readings are not deleted.')) return;
+  state.readings = state.readings.map(r => ({ ...r, synced: false }));
+  saveToStorage();
+  render();
+  showToast('Sync status reset');
+}
+
+// ---------- Export ----------
+
+function buildCSV() {
+  const rows = [
+    ['Date', 'Time', 'Period', 'Systolic', 'Diastolic', 'Heart Rate', 'MAP', 'Pulse Pressure', 'Category', 'Notes'],
+    ...state.readings.map(r => {
+      const cat = getCategory(r.sbp, r.dbp);
+      const d = new Date(r.timestamp);
+      return [
+        d.toLocaleDateString('en-US'),
+        d.toLocaleTimeString('en-US'),
+        PERIODS[r.period].label,
+        r.sbp, r.dbp, r.hr,
+        calcMAP(r.sbp, r.dbp),
+        calcPP(r.sbp, r.dbp),
+        cat.name,
+        (r.notes || '').replace(/"/g, '""'),
+      ];
+    }),
+  ];
+  return rows.map(row => row.map(c => `"${c}"`).join(',')).join('\n');
+}
+
+function exportDownload() {
+  const csv = buildCSV();
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bp-log-${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  showToast('CSV downloaded');
+}
+
+async function exportShare() {
+  const csv = buildCSV();
+  const filename = `bp-log-${new Date().toISOString().split('T')[0]}.csv`;
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [new File([csv], filename, { type: 'text/csv' })] })) {
+      const file = new File([csv], filename, { type: 'text/csv' });
+      await navigator.share({ files: [file], title: 'Blood Pressure Log' });
+      return;
+    }
+    if (navigator.share) {
+      await navigator.share({ title: 'Blood Pressure Log', text: csv });
+      return;
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') return;
+    console.error(e);
+  }
+  exportDownload();
+}
+
+async function exportCopy() {
+  try {
+    await navigator.clipboard.writeText(buildCSV());
+    showToast('Copied to clipboard');
+  } catch (e) {
+    showToast('Copy failed');
+  }
+}
+
+// ---------- Derived data ----------
+
+function getFiltered() {
+  const cutoff = Date.now() - state.range * 86400000;
+  let r = state.readings.filter(x => x.timestamp >= cutoff);
+  if (state.filterPeriod !== 'all') r = r.filter(x => x.period === state.filterPeriod);
+  return r;
+}
+function statsFor(arr) {
+  if (!arr.length) return null;
+  const avg = (a) => Math.round(a.reduce((s, x) => s + x, 0) / a.length);
+  return {
+    avgSbp: avg(arr.map(r => r.sbp)),
+    avgDbp: avg(arr.map(r => r.dbp)),
+    avgHr:  avg(arr.map(r => r.hr)),
+    maxSbp: Math.max(...arr.map(r => r.sbp)),
+    minSbp: Math.min(...arr.map(r => r.sbp)),
+    count: arr.length,
+  };
+}
+function periodAverages() {
+  const cutoff = Date.now() - 7 * 86400000;
+  const recent = state.readings.filter(r => r.timestamp >= cutoff);
+  return Object.keys(PERIODS).map(p => {
+    const set = recent.filter(r => r.period === p);
+    if (!set.length) return { period: p, count: 0 };
+    const avg = (a) => Math.round(a.reduce((s, x) => s + x, 0) / a.length);
+    return {
+      period: p, count: set.length,
+      avgSbp: avg(set.map(r => r.sbp)),
+      avgDbp: avg(set.map(r => r.dbp)),
+      avgHr:  avg(set.map(r => r.hr)),
+    };
+  });
+}
+
+// ---------- Rendering ----------
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="shell">${renderHeader()}${renderView()}</div>` +
+    (state.view !== 'log' ? `<button class="fab" onclick="openLog()" aria-label="Add reading">${ICONS.plus}</button>` : '') +
+    (state.view === 'log' ? renderModal() : '') +
+    (state.toast ? `<div class="toast">${escapeHtml(state.toast)}</div>` : '');
+  attachInputHandlers();
+}
+
+function renderHeader() {
+  return `
+    <div class="header">
+      <div class="eyebrow">Cardiovascular Log</div>
+      <div class="title">Blood Pressure</div>
+      <div class="tabs">
+        <button class="tab ${state.view === 'home'    ? 'active' : ''}" onclick="setState({view:'home'})">Today</button>
+        <button class="tab ${state.view === 'chart'   ? 'active' : ''}" onclick="setState({view:'chart'})">Trend</button>
+        <button class="tab ${state.view === 'history' ? 'active' : ''}" onclick="setState({view:'history'})">Log</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderView() {
+  if (state.view === 'home')    return renderHome();
+  if (state.view === 'chart')   return renderChart();
+  if (state.view === 'history') return renderHistory();
+  return '';
+}
+
+function renderHome() {
+  if (!state.readings.length) {
+    return `
+      <div class="empty-hero">
+        <div class="eyebrow" style="margin-bottom:8px">No readings yet</div>
+        <div class="empty-title">Let's log your first reading.</div>
+        <div class="empty-body">Tap the + button to log a morning, post-exercise, or night reading.</div>
+        <button class="primary-btn" style="margin-top:18px" onclick="openLog()">${ICONS.plus} Log first reading</button>
+      </div>
+    `;
+  }
+  const latest = state.readings[state.readings.length - 1];
+  const periods = periodAverages();
+  const s30 = statsFor(state.readings.filter(r => r.timestamp >= Date.now() - 30 * 86400000));
+
+  return `
+    ${renderLatest(latest)}
+    <div class="section-header"><span>7-day pattern</span></div>
+    <div class="period-grid">
+      ${periods.map(p => renderPeriodTile(p)).join('')}
+    </div>
+    <div class="section-header"><span>Quick stats — last 30 days</span></div>
+    ${s30 ? renderStatsGrid([
+      { label: 'Avg systolic',  value: s30.avgSbp, unit: 'mmHg' },
+      { label: 'Avg diastolic', value: s30.avgDbp, unit: 'mmHg' },
+      { label: 'Avg HR',        value: s30.avgHr,  unit: 'bpm' },
+      { label: 'Readings',      value: s30.count,  unit: '' },
+    ]) : '<div class="empty-small">Log a few readings to see stats.</div>'}
+    <div class="section-header"><span>Recent readings</span></div>
+    <div class="recent-list">
+      ${[...state.readings].reverse().slice(0, 5).map(r => renderRow(r, true)).join('')}
+    </div>
+  `;
+}
+
+function renderLatest(r) {
+  const cat = getCategory(r.sbp, r.dbp);
+  const hrSt = getHRStatus(r.hr);
+  const pcfg = PERIODS[r.period];
+  return `
+    <div class="hero" style="background:${cat.bg};border-color:${cat.ring}">
+      <div class="hero-top">
+        <div class="hero-period">
+          ${ICONS[pcfg.icon]}
+          <span>${pcfg.label}</span>
+          <span class="hero-dot">·</span>
+          <span class="hero-time">${escapeHtml(fmtFull(r.timestamp))}</span>
+        </div>
+        <div class="hero-pill" style="color:${cat.color};border-color:${cat.color}">${cat.short}</div>
+      </div>
+      <div class="hero-numbers">
+        <div class="bp-big" style="color:${cat.color}">${r.sbp}<span class="bp-slash">/</span>${r.dbp}</div>
+        <div class="hero-unit">mmHg</div>
+      </div>
+      <div class="hero-meta">
+        ${renderMeta('Heart rate', r.hr, 'bpm', hrSt.color, hrSt.label)}
+        ${renderMeta('MAP', calcMAP(r.sbp, r.dbp), 'mmHg')}
+        ${renderMeta('Pulse pressure', calcPP(r.sbp, r.dbp), 'mmHg')}
+      </div>
+      ${r.notes ? `<div class="hero-notes">${ICONS.notes}<span>${escapeHtml(r.notes)}</span></div>` : ''}
+    </div>
+  `;
+}
+
+function renderMeta(label, value, unit, accent, note) {
+  return `
+    <div>
+      <div class="meta-label">${label}</div>
+      <div class="meta-row">
+        <span class="meta-value" style="${accent ? `color:${accent}` : ''}">${value}</span>
+        <span class="meta-unit">${unit}</span>
+      </div>
+      ${note ? `<div class="meta-note" style="color:${accent}">${note}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderPeriodTile(p) {
+  const cfg = PERIODS[p.period];
+  if (p.count === 0) {
+    return `
+      <div class="period-tile">
+        <div class="period-tile-head" style="color:${cfg.tint}">${ICONS[cfg.icon]}<span>${cfg.label}</span></div>
+        <div class="period-empty">No data</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="period-tile">
+      <div class="period-tile-head" style="color:${cfg.tint}">${ICONS[cfg.icon]}<span>${cfg.label}</span></div>
+      <div class="period-big">${p.avgSbp}<span class="period-slash">/</span>${p.avgDbp}</div>
+      <div class="period-sub">HR ${p.avgHr} · ${p.count} reading${p.count > 1 ? 's' : ''}</div>
+    </div>
+  `;
+}
+
+function renderStatsGrid(cells) {
+  return `
+    <div class="stats-grid">
+      ${cells.map(c => `
+        <div class="stat-cell">
+          <div class="stat-label">${c.label}</div>
+          <div class="stat-value-row">
+            <span class="stat-value">${c.value}</span>
+            ${c.unit ? `<span class="stat-unit">${c.unit}</span>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderRow(r, tappable) {
+  const cat = getCategory(r.sbp, r.dbp);
+  const cfg = PERIODS[r.period];
+  return `
+    <div class="row ${tappable ? 'tappable' : ''}" ${tappable ? `onclick="openEdit('${r.id}')"` : ''}>
+      <div class="row-dot" style="background:${cat.color}"></div>
+      <div class="row-main">
+        <div class="row-top">
+          ${ICONS[cfg.icon]}
+          <span class="row-period">${cfg.label}</span>
+          <span class="row-date">${escapeHtml(fmtDate(r.timestamp))} · ${escapeHtml(fmtTime(r.timestamp))}</span>
+        </div>
+        ${r.notes ? `<div class="row-notes">${escapeHtml(r.notes)}</div>` : ''}
+      </div>
+      <div class="row-reading">
+        <span class="row-bp">${r.sbp}/${r.dbp}</span>
+        <span class="row-hr">${r.hr} bpm${r.synced ? ` <span class="row-synced" title="In Apple Health">${ICONS.check}</span>` : ''}</span>
+      </div>
+      ${tappable ? `<span class="row-chevron">${ICONS.chevron}</span>` : ''}
+    </div>
+  `;
+}
+
+function renderChart() {
+  const data = getFiltered();
+  const stats = statsFor(data);
+  return `
+    <div class="section-header"><span>Trend</span></div>
+    <div class="controls-row">
+      <div class="control-group">
+        ${[7, 30, 90, 365].map(d => `
+          <button class="chip ${state.range === d ? 'active' : ''}" onclick="setState({range:${d}})">${d === 365 ? '1y' : d + 'd'}</button>
+        `).join('')}
+      </div>
+      <div class="control-group">
+        <button class="chip ${state.filterPeriod === 'all' ? 'active' : ''}" onclick="setState({filterPeriod:'all'})">All</button>
+        ${Object.entries(PERIODS).map(([k, v]) => `
+          <button class="chip ${state.filterPeriod === k ? 'active' : ''}" onclick="setState({filterPeriod:'${k}'})">${ICONS[v.icon]}${v.short}</button>
+        `).join('')}
+      </div>
+    </div>
+    <div class="chart-card">
+      ${data.length === 0 ? '<div class="empty-small">No readings in this range.</div>' : `
+        <div class="chart-legend">
+          <button class="legend-toggle ${state.showLines.sbp ? '' : 'off'}" onclick="toggleLine('sbp')" style="border-color:${state.showLines.sbp ? '#b91c1c' : '#dcd4c6'}">
+            <span class="legend-dot" style="background:#b91c1c"></span><span>Systolic</span>
+          </button>
+          <button class="legend-toggle ${state.showLines.dbp ? '' : 'off'}" onclick="toggleLine('dbp')" style="border-color:${state.showLines.dbp ? '#0e7490' : '#dcd4c6'}">
+            <span class="legend-dot" style="background:#0e7490"></span><span>Diastolic</span>
+          </button>
+          <button class="legend-toggle ${state.showLines.hr ? '' : 'off'}" onclick="toggleLine('hr')" style="border-color:${state.showLines.hr ? '#6b21a8' : '#dcd4c6'}">
+            <span class="legend-dot" style="background:#6b21a8"></span><span>Heart rate</span>
+          </button>
+        </div>
+        ${renderChartSvg(data)}
+        <div class="chart-footnote">Dashed reference lines: 120 (elevated) · 130 (stage 1) · 140 (stage 2) mmHg</div>
+      `}
+    </div>
+    ${stats ? `
+      <div class="section-header"><span>Summary — ${state.range === 365 ? '1 year' : state.range + ' days'}</span></div>
+      ${renderStatsGrid([
+        { label: 'Avg BP',  value: `${stats.avgSbp}/${stats.avgDbp}`, unit: 'mmHg' },
+        { label: 'Avg HR',  value: stats.avgHr, unit: 'bpm' },
+        { label: 'Peak SBP',value: stats.maxSbp, unit: 'mmHg' },
+        { label: 'Low SBP', value: stats.minSbp, unit: 'mmHg' },
+      ])}
+    ` : ''}
+  `;
+}
+
+function toggleLine(k) {
+  state.showLines[k] = !state.showLines[k];
+  render();
+}
+
+function renderChartSvg(data) {
+  const W = 540, H = 320;
+  const padL = 36, padR = 12, padT = 14, padB = 28;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+
+  const yMin = 40, yMax = 200;
+  const yRange = yMax - yMin;
+  const ySteps = [40, 80, 120, 160, 200];
+
+  const xs = data.map(d => d.timestamp);
+  const xMin = Math.min(...xs);
+  const xMax = Math.max(...xs);
+  const xRange = Math.max(xMax - xMin, 86400000); // at least 1 day
+
+  const xScale = (ts) => padL + ((ts - xMin) / xRange) * innerW;
+  const yScale = (v) => padT + (1 - (v - yMin) / yRange) * innerH;
+
+  const refLines = [120, 130, 140];
+
+  const pathFor = (key) => {
+    if (!data.length) return '';
+    return data.map((d, i) =>
+      (i === 0 ? 'M' : 'L') + xScale(d.timestamp).toFixed(1) + ',' + yScale(d[key]).toFixed(1)
+    ).join(' ');
+  };
+
+  const dots = (key, color) => data.map(d =>
+    `<circle cx="${xScale(d.timestamp).toFixed(1)}" cy="${yScale(d[key]).toFixed(1)}" r="3" fill="${color}" stroke="#fff" stroke-width="1.5"/>`
+  ).join('');
+
+  // x-axis labels: 4-6 evenly spaced
+  const labelCount = Math.min(5, data.length);
+  const xLabels = [];
+  if (data.length <= 5) {
+    data.forEach(d => xLabels.push({ ts: d.timestamp, label: fmtDate(d.timestamp) }));
+  } else {
+    for (let i = 0; i < labelCount; i++) {
+      const idx = Math.floor((i / (labelCount - 1)) * (data.length - 1));
+      xLabels.push({ ts: data[idx].timestamp, label: fmtDate(data[idx].timestamp) });
+    }
+  }
+
+  const refColors = { 120: '#a16207', 130: '#c2410c', 140: '#b91c1c' };
+
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- grid lines -->
+      ${ySteps.map(v => `
+        <line x1="${padL}" x2="${padL + innerW}" y1="${yScale(v).toFixed(1)}" y2="${yScale(v).toFixed(1)}" stroke="#e8e0d0" stroke-dasharray="2 4"/>
+        <text class="chart-axis-text" x="${padL - 6}" y="${(yScale(v) + 3).toFixed(1)}" text-anchor="end">${v}</text>
+      `).join('')}
+
+      <!-- reference lines -->
+      ${refLines.map(v => `
+        <line x1="${padL}" x2="${padL + innerW}" y1="${yScale(v).toFixed(1)}" y2="${yScale(v).toFixed(1)}" stroke="${refColors[v]}" stroke-dasharray="3 3" stroke-opacity="0.5"/>
+      `).join('')}
+
+      <!-- x axis labels -->
+      ${xLabels.map(l => `
+        <text class="chart-axis-text" x="${xScale(l.ts).toFixed(1)}" y="${H - 8}" text-anchor="middle">${escapeHtml(l.label)}</text>
+      `).join('')}
+
+      <!-- lines -->
+      ${state.showLines.hr  ? `<path d="${pathFor('hr')}"  fill="none" stroke="#6b21a8" stroke-width="2" stroke-dasharray="4 2"/>` : ''}
+      ${state.showLines.dbp ? `<path d="${pathFor('dbp')}" fill="none" stroke="#0e7490" stroke-width="2"/>` : ''}
+      ${state.showLines.sbp ? `<path d="${pathFor('sbp')}" fill="none" stroke="#b91c1c" stroke-width="2"/>` : ''}
+
+      <!-- dots -->
+      ${state.showLines.hr  ? dots('hr',  '#6b21a8') : ''}
+      ${state.showLines.dbp ? dots('dbp', '#0e7490') : ''}
+      ${state.showLines.sbp ? dots('sbp', '#b91c1c') : ''}
+    </svg>
+  `;
+}
+
+function renderHistory() {
+  const unsyncedCount = getUnsynced().length;
+  return `
+    <div class="section-header">
+      <span>All readings (${state.readings.length})</span>
+    </div>
+    ${state.readings.length === 0
+      ? '<div class="empty-small">No readings yet.</div>'
+      : `
+        <div class="sync-card ${unsyncedCount === 0 ? 'synced' : ''}">
+          <div class="sync-card-main">
+            <div class="sync-card-icon">${ICONS.health}</div>
+            <div>
+              <div class="sync-card-title">Apple Health</div>
+              <div class="sync-card-sub">${
+                unsyncedCount === 0
+                  ? 'All readings synced'
+                  : `${unsyncedCount} reading${unsyncedCount > 1 ? 's' : ''} ready to sync`
+              }</div>
+            </div>
+          </div>
+          <button class="sync-btn ${unsyncedCount === 0 ? 'ghost' : ''}" onclick="syncToHealth()">
+            ${unsyncedCount === 0 ? 'Re-sync all' : `Sync ${unsyncedCount}`}
+          </button>
+        </div>
+        ${unsyncedCount === 0 ? `<button class="reset-sync-link" onclick="resetSyncStatus()">Sync didn't go through? Reset status</button>` : ''}
+
+        <div class="export-row">
+          <button class="export-btn" onclick="exportShare()">${ICONS.share} Share / send</button>
+          <button class="export-btn" onclick="exportDownload()">${ICONS.download} Download</button>
+          <button class="export-btn" onclick="exportCopy()">${ICONS.copy} Copy</button>
+        </div>
+        <div class="recent-list">
+          ${[...state.readings].reverse().map(r => renderRow(r, true)).join('')}
+        </div>
+      `
+    }
+  `;
+}
+
+function renderModal() {
+  const f = state.form;
+  const sbp = parseInt(f.sbp, 10), dbp = parseInt(f.dbp, 10), hr = parseInt(f.hr, 10);
+  const validForPreview = sbp && dbp && sbp > dbp;
+  const cat = validForPreview ? getCategory(sbp, dbp) : null;
+  const editing = !!state.editingId;
+
+  return `
+    <div class="modal-backdrop" onclick="closeLog()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-head">
+          <div>
+            <div class="eyebrow">${editing ? 'Edit reading' : 'New reading'}</div>
+            <div class="modal-title">${editing ? 'Edit Reading' : 'Log Blood Pressure'}</div>
+          </div>
+          <button class="icon-btn" onclick="closeLog()" aria-label="Close">${ICONS.close}</button>
+        </div>
+
+        <div class="field">
+          <label class="field-label">When</label>
+          <div class="seg-group">
+            ${Object.entries(PERIODS).map(([k, v]) => `
+              <button class="seg-btn ${f.period === k ? 'active' : ''}" onclick="setFormField('period','${k}')">
+                ${ICONS[v.icon]}<span>${v.label}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="bp-row">
+          <div class="field">
+            <label class="field-label">Systolic</label>
+            <input id="f-sbp" class="big-input" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="120" value="${escapeHtml(f.sbp)}">
+          </div>
+          <div class="bp-slash-char">/</div>
+          <div class="field">
+            <label class="field-label">Diastolic</label>
+            <input id="f-dbp" class="big-input" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="80" value="${escapeHtml(f.dbp)}">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Heart rate (bpm)</label>
+          <input id="f-hr" class="big-input" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="68" value="${escapeHtml(f.hr)}">
+        </div>
+
+        <div class="field">
+          <label class="field-label">Date &amp; time</label>
+          <input id="f-when" class="dt-input" type="datetime-local" value="${escapeHtml(f.when)}">
+        </div>
+
+        <div class="field">
+          <label class="field-label">Notes (optional)</label>
+          <textarea id="f-notes" class="textarea" rows="2" placeholder="Symptoms, meds taken, stress, sleep…">${escapeHtml(f.notes)}</textarea>
+        </div>
+
+        ${validForPreview ? `
+          <div class="preview" style="background:${cat.bg};border-color:${cat.ring}">
+            <span class="preview-pill" style="color:${cat.color};border-color:${cat.color}">${cat.short}</span>
+            <span class="preview-text">MAP ${calcMAP(sbp, dbp)} · PP ${calcPP(sbp, dbp)}${hr ? ` · HR ${hr}` : ''}</span>
+          </div>
+        ` : ''}
+
+        ${state.formError ? `<div class="error">${escapeHtml(state.formError)}</div>` : ''}
+
+        <div class="modal-actions">
+          ${editing
+            ? `<button class="delete-btn" onclick="deleteReading()">Delete</button>`
+            : `<button class="secondary-btn" onclick="closeLog()">Cancel</button>`
+          }
+          <button class="primary-btn" onclick="saveReading()">${editing ? 'Update' : 'Save reading'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function setFormField(key, value) {
+  state.form[key] = value;
+  render();
+}
+
+function attachInputHandlers() {
+  // Wire up inputs to state without re-rendering on every keystroke (so focus is preserved)
+  const wire = (id, key) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', (e) => { state.form[key] = e.target.value; });
+  };
+  wire('f-sbp', 'sbp');
+  wire('f-dbp', 'dbp');
+  wire('f-hr',  'hr');
+  wire('f-when','when');
+  wire('f-notes','notes');
+
+  // Update preview on blur (so it shows after typing without disrupting focus)
+  ['f-sbp', 'f-dbp', 'f-hr'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('blur', () => render());
+  });
+}
+
+// expose for inline handlers
+window.setState = setState;
+window.openLog = openLog;
+window.openEdit = openEdit;
+window.closeLog = closeLog;
+window.saveReading = saveReading;
+window.deleteReading = deleteReading;
+window.toggleLine = toggleLine;
+window.setFormField = setFormField;
+window.exportDownload = exportDownload;
+window.exportShare = exportShare;
+window.exportCopy = exportCopy;
+window.syncToHealth = syncToHealth;
+window.resetSyncStatus = resetSyncStatus;
+
+// ---------- Boot ----------
+loadFromStorage();
+render();
+</script>
+</body>
+</html>
